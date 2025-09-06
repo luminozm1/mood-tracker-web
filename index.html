@@ -298,6 +298,9 @@
         import {
             getFirestore, collection, addDoc, getDocs, query, orderBy, where, updateDoc, doc
         } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+        import {
+            getAuth, signInAnonymously, onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBd2jdbHUFZPLw3RA4_KR3IlXJl9tgDT2s",
@@ -310,6 +313,21 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // ✅ Sign in anonymously on load
+        signInAnonymously(auth).catch((error) => {
+            console.error("Auth error:", error);
+        });
+
+        // Wait until signed in, then load data
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("Signed in as:", user.uid);
+                loadStatusChart();
+                loadHistory();
+            }
+        });
 
         const scales = {
             mood: { map: { "Very Bad": 1, "Bad": 2, "Neutral": 3, "Good": 4, "Very Good": 5 } },
