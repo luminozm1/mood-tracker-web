@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Oasis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="./styles/track.css">
+</head>
+
+<body>
+    <h1> Mood Tracker</h1>
+
+    <div class="dashboard">
+        <div class="left-col">
+            <div class="card">
+                <h3>How was your Mood today?</h3>
+                <button class="red" onclick="selectAnswer('mood','Very Bad')">Very Bad</button>
+                <button class="orange" onclick="selectAnswer('mood','Bad')">Bad</button>
+                <button class="grey" onclick="selectAnswer('mood','Neutral')">Neutral</button>
+                <button class="green" onclick="selectAnswer('mood','Good')">Good</button>
+                <button class="blue" onclick="selectAnswer('mood','Very Good')">Very Good</button>
+            </div>
+
+            <div class="card">
+                <h3>How was your Anxiety today?</h3>
+                <button class="green" onclick="selectAnswer('anxiety','None')">None</button>
+                <button class="blue" onclick="selectAnswer('anxiety','Mild')">Mild</button>
+                <button class="orange" onclick="selectAnswer('anxiety','Moderate')">Moderate</button>
+                <button class="red" onclick="selectAnswer('anxiety','Severe')">Severe</button>
+            </div>
+
+            <div class="card">
+                <h3>How was your Sleep last night?</h3>
+                <button class="red" onclick="selectAnswer('sleep','Very Bad')">Very Bad</button>
+                <button class="orange" onclick="selectAnswer('sleep','Bad')">Bad</button>
+                <button class="grey" onclick="selectAnswer('sleep','Neutral')">Neutral</button>
+                <button class="green" onclick="selectAnswer('sleep','Good')">Good</button>
+                <button class="blue" onclick="selectAnswer('sleep','Very Good')">Very Good</button>
+            </div>
+
+            <button id="saveBtn" onclick="saveEntry()"> Save Today’s Entry</button>
+            <div id="errorMsg">⚠ Please select all options</div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="statusChart"></canvas>
+            <div id="tips">💡 Tips will appear here based on your patterns.</div>
+        </div>
+    </div>
+
+    <div id="history">
+        <h2>📖 Past Entries</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Mood</th>
+                    <th>Anxiety</th>
+                    <th>Sleep</th>
+                </tr>
+            </thead>
+            <tbody id="historyTable"></tbody>
+        </table>
+    </div>
+<script type="module" src="./main.js"></script>
+</body>
+
+</html>
