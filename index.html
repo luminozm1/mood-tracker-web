@@ -7,7 +7,6 @@
     <title>Mood Tracker</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* --- keep your existing CSS --- */
         * {
             margin: 0;
             padding: 0;
@@ -30,6 +29,7 @@
             text-align: center;
         }
 
+        /* Layout */
         .dashboard {
             display: grid;
             grid-template-columns: 1fr 2fr;
@@ -38,6 +38,7 @@
             margin-bottom: 2rem;
         }
 
+        /* Left column */
         .left-col {
             display: flex;
             flex-direction: column;
@@ -128,6 +129,7 @@
             text-align: center;
         }
 
+        /* Chart */
         .chart-container {
             background: rgba(255, 255, 255, 0.85);
             border-radius: 16px;
@@ -150,6 +152,7 @@
             font-size: 0.95rem;
         }
 
+        /* Past entries */
         #history {
             margin-top: 2rem;
             width: 100%;
@@ -182,6 +185,54 @@
             background: #f3e5f5;
             color: #4527a0;
             font-weight: 600;
+        }
+
+        /* Responsive: stack layout */
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .left-col,
+            .chart-container,
+            #history {
+                order: initial;
+            }
+        }
+
+        /* Very small screens */
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            button {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+
+            table {
+                font-size: 12px;
+                min-width: 340px;
+            }
+
+            #history {
+                overflow-x: auto;
+            }
+        }
+
+        /* Large screens */
+        @media (min-width: 1200px) {
+            .chart-container {
+                min-height: 400px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            canvas {
+                min-height: 350px !important;
+            }
         }
     </style>
 </head>
