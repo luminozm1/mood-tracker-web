@@ -6,6 +6,7 @@ import {
     getAuth, signInAnonymously, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
+// ================== Firebase Config ==================
 const firebaseConfig = {
     apiKey: "AIzaSyBd2jdbHUFZPLw3RA4_KR3IlXJl9tgDT2s",
     authDomain: "moodtrack11.firebaseapp.com",
@@ -19,20 +20,23 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// ✅ Sign in anonymously on load
+let currentUser = null;
+
+// ================== Auth ==================
 signInAnonymously(auth).catch((error) => {
     console.error("Auth error:", error);
 });
 
-// Wait until signed in, then load data
 onAuthStateChanged(auth, (user) => {
     if (user) {
+        currentUser = user;
         console.log("Signed in as:", user.uid);
         loadStatusChart();
         loadHistory();
     }
 });
 
+// ================== Scales ==================
 const scales = {
     mood: { map: { "Very Bad": 1, "Bad": 2, "Neutral": 3, "Good": 4, "Very Good": 5 } },
     anxiety: { map: { "Severe": 1, "Moderate": 2, "Mild": 4, "None": 5 } },
@@ -41,6 +45,7 @@ const scales = {
 
 let answers = { mood: null, anxiety: null, sleep: null };
 
+// ================== Answer Selection ==================
 window.selectAnswer = function (question, value) {
     answers[question] = value;
     const buttons = document.querySelectorAll(`.card button`);
@@ -52,7 +57,10 @@ window.selectAnswer = function (question, value) {
     event.target.classList.add("selected");
 };
 
+// ================== Save Entry ==================
 window.saveEntry = async function () {
+    if (!currentUser) return;
+
     document.getElementById("errorMsg").style.display = "none";
     if (!answers.mood || !answers.anxiety || !answers.sleep) {
         document.getElementById("errorMsg").style.display = "block";
@@ -61,14 +69,27 @@ window.saveEntry = async function () {
 
     const today = new Date().toISOString().split("T")[0];
     try {
-        const q = query(collection(db, "entries"), where("date", "==", today));
+        const q = query(
+            collection(db, "entries"),
+            where("uid", "==", currentUser.uid),
+            where("date", "==", today)
+        );
         const snapshot = await getDocs(q);
 
         if (!snapshot.empty) {
             const existingDoc = snapshot.docs[0];
-            await updateDoc(doc(db, "entries", existingDoc.id), { ...answers, timestamp: new Date() });
+            await updateDoc(doc(db, "entries", existingDoc.id), { 
+                uid: currentUser.uid,
+                ...answers, 
+                timestamp: new Date() 
+            });
         } else {
-            await addDoc(collection(db, "entries"), { date: today, ...answers, timestamp: new Date() });
+            await addDoc(collection(db, "entries"), { 
+                uid: currentUser.uid,
+                date: today, 
+                ...answers, 
+                timestamp: new Date() 
+            });
         }
 
         answers = { mood: null, anxiety: null, sleep: null };
@@ -80,6 +101,7 @@ window.saveEntry = async function () {
     }
 };
 
+// ================== Chart ==================
 const ctx = document.getElementById("statusChart").getContext("2d");
 let statusChart = new Chart(ctx, {
     type: "bar",
@@ -106,8 +128,15 @@ let statusChart = new Chart(ctx, {
     }
 });
 
+// ================== Load Data ==================
 async function loadStatusChart() {
-    const q = query(collection(db, "entries"), orderBy("timestamp", "desc"));
+    if (!currentUser) return;
+
+    const q = query(
+        collection(db, "entries"),
+        where("uid", "==", currentUser.uid),
+        orderBy("timestamp", "desc")
+    );
     const snapshot = await getDocs(q);
 
     let moodVals = [], anxietyVals = [], sleepVals = [];
@@ -134,16 +163,11 @@ function showTips(mood, anxiety, sleep) {
 
     const overall = (mood + anxiety + sleep) / 3;
 
-    // Case 1: Everything is generally good
     if (mood >= 4 && anxiety >= 4 && sleep >= 4) {
         tips = "🌞 You're doing great overall! Keep maintaining your healthy routine.";
-    }
-    // Case 2: Everything is generally bad
-    else if (mood <= 2 && anxiety <= 2 && sleep <= 2) {
+    } else if (mood <= 2 && anxiety <= 2 && sleep <= 2) {
         tips = "🌧️ You’ve had a rough patch. Try small steps: light exercise, journaling, or reaching out to a friend.";
-    }
-    // Case 3: One factor stands out as worse
-    else {
+    } else {
         const minVal = Math.min(mood, anxiety, sleep);
         if (minVal === mood && mood < overall - 1) {
             tips = "💙 Mood seems lower than the rest. Try doing something enjoyable today or talking with someone you trust.";
@@ -159,9 +183,14 @@ function showTips(mood, anxiety, sleep) {
     document.getElementById("tips").innerText = tips;
 }
 
-
 async function loadHistory() {
-    const q = query(collection(db, "entries"), orderBy("timestamp", "desc"));
+    if (!currentUser) return;
+
+    const q = query(
+        collection(db, "entries"),
+        where("uid", "==", currentUser.uid),
+        orderBy("timestamp", "desc")
+    );
     const snapshot = await getDocs(q);
     const tbody = document.getElementById("historyTable");
     tbody.innerHTML = "";
@@ -175,6 +204,3 @@ async function loadHistory() {
         </tr>`;
     });
 }
-
-loadStatusChart();
-loadHistory();
